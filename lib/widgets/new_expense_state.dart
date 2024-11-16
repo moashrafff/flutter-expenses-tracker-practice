@@ -16,6 +16,7 @@ class _NewExpenseState extends State<NewExpenseState> {
   final _numberController = TextEditingController();
   var readOnly = false;
   DateTime? _selectedDate;
+  Category _selectedCategory = Category.leisure;
 
   void cancelEditing() {
     readOnly = true;
@@ -27,9 +28,9 @@ class _NewExpenseState extends State<NewExpenseState> {
     final pickedDate = await showDatePicker(
         context: context, firstDate: firstDate, lastDate: date);
 
-        setState(() {
-          _selectedDate = pickedDate;
-        });
+    setState(() {
+      _selectedDate = pickedDate;
+    });
   }
 
   @override
@@ -78,11 +79,29 @@ class _NewExpenseState extends State<NewExpenseState> {
               )
             ],
           ),
+          const SizedBox(height: 16,),
           Row(
             children: [
+              DropdownButton(
+            value: _selectedCategory,
+              items: Category.values
+                  .map((category) => DropdownMenuItem(
+                      value: category,
+                      child: Text(category.name.toUpperCase())))
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                setState(() {
+                  _selectedCategory = value;
+                });
+                
+              }),
+              const Spacer(),
               ElevatedButton(
                   onPressed: () {
-                    print(_textController.text);
+                    _submitExpenseDate();
                   },
                   child: const Text('Save Input')),
               TextButton(
@@ -96,5 +115,13 @@ class _NewExpenseState extends State<NewExpenseState> {
         ],
       ),
     );
+  }
+  
+  void _submitExpenseDate() {
+    final enteredAmount = double.tryParse(_numberController.text);
+    final isAmountInvalid = enteredAmount == null || enteredAmount <=0 ; 
+    if(isAmountInvalid || _textController.text.trim().isEmpty || _selectedDate == null){
+      
+    }
   }
 }
