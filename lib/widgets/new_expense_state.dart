@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
 class NewExpenseState extends StatefulWidget {
-  const NewExpenseState({super.key});
+  const NewExpenseState({super.key, required this.addNewExpense});
+
+  final void Function (Expense expnse) addNewExpense; 
 
   @override
   State<NewExpenseState> createState() {
@@ -121,7 +123,17 @@ class _NewExpenseState extends State<NewExpenseState> {
     final enteredAmount = double.tryParse(_numberController.text);
     final isAmountInvalid = enteredAmount == null || enteredAmount <=0 ; 
     if(isAmountInvalid || _textController.text.trim().isEmpty || _selectedDate == null){
-      
+      showDialog(context: context, builder: (ctx) => AlertDialog(
+        title: const Text('Invalid Input'),
+        content: const Text('Please make sure a valid title, amount, date and category was entered!'),
+        actions: [
+          TextButton(onPressed: (){
+            Navigator.pop(ctx);
+          }, child: const Text('okay'))
+        ],
+      ));
+      return;
     }
+    widget.addNewExpense(Expense(title: _textController.text, amount: enteredAmount, date: _selectedDate!, category: _selectedCategory));
   }
 }
