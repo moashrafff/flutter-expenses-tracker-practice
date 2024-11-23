@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -17,7 +16,6 @@ const categoryIcons = {
 };
 
 class Expense {
-
   Expense({
     required this.title,
     required this.amount,
@@ -39,14 +37,19 @@ class Expense {
 class ExpenseBucket {
   const ExpenseBucket({required this.category, required this.expenses});
 
+  ExpenseBucket.forCategory(List<Expense> allExpenses, this.category)
+      : expenses = allExpenses
+            .where((expense) => expense.category == category)
+            .toList();
+
   final Category category;
   final List<Expense> expenses;
 
-  double getTotalExpenses(){
-    double sum = 0 ;
-      for (var expense in expenses) {
-        sum += expense.amount;
-      }
+  double get totalExpenses {
+    double sum = 0;
+    for (var expense in expenses) {
+      sum += expense.amount;
+    }
     return sum;
   }
 }
