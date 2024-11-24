@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:expense_tracker/model/expense.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class NewExpenseState extends StatefulWidget {
@@ -43,85 +46,100 @@ class _NewExpenseState extends State<NewExpenseState> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16,48,16,16),
-      child: Column(
-        children: [
-          TextField(
-            readOnly: readOnly,
-            controller: _textController,
-            maxLength: 50,
-            decoration: const InputDecoration(label: Text('Title')),
-          ),
-          Row(
+    final keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
+    return SizedBox(
+      height: double.infinity,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16,48,16,keyboardSpace + 16),
+          child: Column(
             children: [
-              Expanded(
-                child: TextField(
-                  keyboardType: TextInputType.number,
-                  readOnly: readOnly,
-                  controller: _numberController,
-                  maxLength: 50,
-                  decoration: const InputDecoration(
-                      prefixText: '\$ ', label: Text('Amount')),
-                ),
+              TextField(
+                readOnly: readOnly,
+                controller: _textController,
+                maxLength: 50,
+                decoration: const InputDecoration(label: Text('Title')),
               ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(_selectedDate == null
-                        ? 'no selected date'
-                        : formatter.format(_selectedDate!)),
-                    IconButton(
-                        onPressed: _presenetDatePicker,
-                        icon: const Icon(Icons.date_range))
-                  ],
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      keyboardType: TextInputType.number,
+                      readOnly: readOnly,
+                      controller: _numberController,
+                      maxLength: 50,
+                      decoration: const InputDecoration(
+                          prefixText: '\$ ', label: Text('Amount')),
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(_selectedDate == null
+                            ? 'no selected date'
+                            : formatter.format(_selectedDate!)),
+                        IconButton(
+                            onPressed: _presenetDatePicker,
+                            icon: const Icon(Icons.date_range))
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              const SizedBox(height: 16,),
+              Row(
+                children: [
+                  DropdownButton(
+                value: _selectedCategory,
+                  items: Category.values
+                      .map((category) => DropdownMenuItem(
+                          value: category,
+                          child: Text(category.name.toUpperCase())))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                    
+                  }),
+                  const Spacer(),
+                  ElevatedButton(
+                      onPressed: () {
+                        _submitExpenseDate();
+                      },
+                      child: const Text('Save Input')),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ],
               )
             ],
           ),
-          const SizedBox(height: 16,),
-          Row(
-            children: [
-              DropdownButton(
-            value: _selectedCategory,
-              items: Category.values
-                  .map((category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category.name.toUpperCase())))
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) {
-                  return;
-                }
-                setState(() {
-                  _selectedCategory = value;
-                });
-                
-              }),
-              const Spacer(),
-              ElevatedButton(
-                  onPressed: () {
-                    _submitExpenseDate();
-                  },
-                  child: const Text('Save Input')),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Cancel'),
-              ),
-            ],
-          )
-        ],
+        ),
       ),
     );
   }
-  
-  void _submitExpenseDate() {
-    final enteredAmount = double.tryParse(_numberController.text);
-    final isAmountInvalid = enteredAmount == null || enteredAmount <=0 ; 
-    if(isAmountInvalid || _textController.text.trim().isEmpty || _selectedDate == null){
+
+  void _showDialog(){
+    if (Platform.isIOS){
+      showCupertinoDialog(context: context, builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Invalid Input'),
+        content: const Text('Please make sure a valid title, amount, date and category was entered!'),
+        actions: [
+          TextButton(onPressed: (){
+            Navigator.pop(ctx);
+          }, child: const Text('okay'))
+        ],
+      ));
+
+    }else {
       showDialog(context: context, builder: (ctx) => AlertDialog(
         title: const Text('Invalid Input'),
         content: const Text('Please make sure a valid title, amount, date and category was entered!'),
@@ -131,6 +149,14 @@ class _NewExpenseState extends State<NewExpenseState> {
           }, child: const Text('okay'))
         ],
       ));
+    }
+  }
+  
+  void _submitExpenseDate() {
+    final enteredAmount = double.tryParse(_numberController.text);
+    final isAmountInvalid = enteredAmount == null || enteredAmount <=0 ; 
+    if(isAmountInvalid || _textController.text.trim().isEmpty || _selectedDate == null){
+        _showDialog();
       return;
     }
     widget.addNewExpense(Expense(title: _textController.text, amount: enteredAmount, date: _selectedDate!, category: _selectedCategory));
