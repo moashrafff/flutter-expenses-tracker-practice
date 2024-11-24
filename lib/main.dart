@@ -12,12 +12,12 @@ var kDarkColorScheme = ColorScheme.fromSeed(
 
 void main() {
   // lock orientation
-  WidgetsFlutterBinding.ensureInitialized;
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]).then((fn) {
+  // WidgetsFlutterBinding.ensureInitialized;
+  // SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitUp,
+  // ]).then((fn) {
     runApp(const MainApp());
-  });
+  // });
 }
 
 class MainApp extends StatelessWidget {
